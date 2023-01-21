@@ -5,12 +5,10 @@
     #include <string>
     #include "time.h"
     #define WIFI_SSID ""
-    #define WIFI_PASSWORD ""
-    // #define WIFI_SSID "";
-    // #define WIFI_PASSWORD = "";
-    #define OWNER_EMAIL ""
-    #define OWNER_PASSWORD ""
-    #define RECIPIENT_EMAIL ""
+    #define WIFI_PASSWORD "" 
+    #define OWNER_EMAIL "dooralarm24@gmail.com"
+    #define OWNER_PASSWORD "eyqkepkztrtobbxl"
+    #define RECIPIENT_EMAIL "cyrasebastian01@gmail.com"
     #define SMTP_HOST "smtp.gmail.com"
     #define SMTP_PORT 465
     #define ntpServer "pool.ntp.org"
@@ -22,7 +20,7 @@
     #define magneticSensorPin 26
     #define interruptButtonPin GPIO_NUM_27
     #define interruptMagneticSensorPin GPIO_NUM_26
-    #define sizeOfTheArray 5
+    #define sizeOfTheArray 100
     #define sleepingTime_us 10000000
     RTC_DATA_ATTR bool magneticSensorPreviousState;
     bool sendData(); //Used to send an email
@@ -31,12 +29,10 @@
     //Class record, contains string with date and bool to notify kind of performed action.
     //Without sets and gets to reduce program storage space just a little bit
     class record {
-      std::string date;
+      char date[20];
       bool closure;
       public:      
       record() {
-        this->date = "";
-        this->closure = false;
       }
       std::string getDate() {
         return date;
@@ -45,7 +41,7 @@
         return closure;
       }
       void setDate(std::string date) {
-        this->date = date;
+        strcpy(this->date, date.c_str());
       }
       void setClosure(bool closure) {
         this->closure = closure;
@@ -127,7 +123,7 @@ void wakeup_reason(){
       arrayOverloaded = false;
     }
     else {
-      if(actualNumberOfActions + 1 < sizeOfTheArray) {
+      if(actualNumberOfActions + 1 <= sizeOfTheArray) {
         addToTheList();        
       }
       else {
@@ -144,10 +140,9 @@ void wakeup_reason(){
 
   void addToTheList() {
     struct tm time;
-    if(actualNumberOfActions >= 0 && actualNumberOfActions < sizeOfTheArray && getLocalTime(&time)) {
-
+    if(actualNumberOfActions >= 0 && actualNumberOfActions <= sizeOfTheArray && getLocalTime(&time)) {
       std::string temp = std::to_string(time.tm_mday) + "." + std::to_string(time.tm_mon + 1) + "." + std::to_string(1900+time.tm_year) +
-       "  " + std::to_string(time.tm_hour) + ":" + std::to_string(time.tm_min) + ":" + std::to_string(time.tm_sec) + "\n";      
+       "  " + std::to_string(time.tm_hour) + ":" + std::to_string(time.tm_min) + ":" + std::to_string(time.tm_sec);      
       array[actualNumberOfActions].setDate(temp);
       array[actualNumberOfActions].setClosure(magneticSensorPreviousState);
       ++actualNumberOfActions; 
@@ -211,7 +206,7 @@ void wakeup_reason(){
         for(int i = actualNumberOfActions - 1; i >= 0 ; --i) {
           textMsg = textMsg + array[i].getDate() + "   " + (array[i].getClosure() ? "closed" : "opened") + "\n";
         }
-        for(int i = sizeOfTheArray; i > actualNumberOfActions ; --i) {
+        for(int i = sizeOfTheArray - 1; i >= actualNumberOfActions ; --i) {
           textMsg = textMsg + array[i].getDate() + "   " + (array[i].getClosure() ? "closed" : "opened") + "\n";
         }
       }
